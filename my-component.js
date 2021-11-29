@@ -2,8 +2,8 @@
 copyright 2021, zhongyicantian
 www.github.com/zhongyicantian
 */
-// 1.a drawing div
-customElements.define('draw-div', class extends HTMLElement {
+// 1.a drawing component
+customElements.define('draw-component', class extends HTMLElement {
     constructor(){
         super();
         this.attachShadow({mode: 'open'});
@@ -13,10 +13,10 @@ customElements.define('draw-div', class extends HTMLElement {
                     position: relative;
                 }
                 canvas{
-                    border: 3px solid #000;
+                    outline: 3px solid #000;
                     border-radius: 15px;
-                    background-clip: content-box;
                     position: relative;
+                    margin: 3px auto;
                 }
                 .toogle-tool-bar{
                     z-index: 99;
@@ -28,6 +28,9 @@ customElements.define('draw-div', class extends HTMLElement {
                 .row,
                 .cancel,
                 .column,
+                .stroketext,
+                .filltext,
+                #font,
                 #strokeWidth,
                 .download{
                     color: black;
@@ -40,7 +43,7 @@ customElements.define('draw-div', class extends HTMLElement {
                     text-align: center;
                     transition: all 0.2s ease-in-out;
                 }
-                #strokeWidth{
+                #strokeWidth,#font{
                     padding:0;
                     transform: translateY(-8px);
                 }
@@ -50,17 +53,17 @@ customElements.define('draw-div', class extends HTMLElement {
                 .cancel,.strokeWidth{
                     display: inline-block;
                 }
-                .pen,#color,.column{
+                .pen,#color,.column,.filltext{
                     border-top-right-radius: 50%;
                     border-bottom-right-radius: 50%;
                     display: inline-block;
                 }
-                .rubber,#Backgroundcolor,.row{
+                .rubber,#Backgroundcolor,.row,.stroketext{
                     border-top-left-radius: 50%;
                     border-bottom-left-radius: 50%;
                     display: inline-block;
                 }
-                .pen-rubber,.color-bgcolor,.shift{
+                .pen-rubber,.color-bgcolor,.shift,.text{
                     height: 25px;
                 }
                 .active{
@@ -93,15 +96,13 @@ customElements.define('draw-div', class extends HTMLElement {
                 .hidden{
                    display: none;
                 }
-                /*
                 .mouse{
                     position: absolute;
                     border:1px solid #000;
                 }
-                */
             </style>
             <canvas></canvas>
-            <!--div class="mouse"></div--> 
+            <div class="mouse"></div> 
             <div class="tools-main">
                 <div class="toogle-tool-bar">
                     <button title="toogle the tool bar" id="toogle">X</button>
@@ -113,6 +114,17 @@ customElements.define('draw-div', class extends HTMLElement {
                     <input type="color" id="Backgroundcolor" title="select background color"/>
                     <input type="color" id="color" title="select color"/>
                 </div>
+                <!--div class="tools text">
+                    <div class="stroketext" title="clear the canvas" id="clear">
+                        <svg t="1638014792545" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5376" width="15" height="15"><path d="M991.996472 32.014816v63.995767h-415.989417a32.003528 32.003528 0 0 0-32.003527 31.992239v863.99365h-63.995767V128.014111a31.992239 31.992239 0 0 0-31.992239-31.992239H32.014816v-64.007056h959.981656M1024 0.011289H0.022577V128.014111h447.992945v895.985889h127.991533V128.014111H1024V0.011289z" p-id="5377"></path></svg>
+                    </div>
+                    <div class="tools strokeWidth">
+                        <input type="text" id="font" title="input your stroke and rubber size" value="10"/>
+                    </div>
+                    <div class="filltext" title="clear the canvas" id="clear">
+                    <svg t="1638014822513" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6230" width="15" height="15"><path d="M456.133 928V170.383H173.125V69.016h680.859v101.367H569.805V928H456.133z" fill="#2c2c2c" p-id="6231"></path></svg>
+                    </div>
+                </div-->
                 <div class="tools pen-rubber">
                     <div class="tools rubber " title="rubber tools">
                         <svg t="1637598088331" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3809" width="21" height="21"><path d="M891.46 893.42H132.54c-18.3 0-33.18 14.88-33.18 33.18s14.88 33.18 33.18 33.18h758.93c18.3 0 33.18-14.88 33.18-33.18 0-18.29-14.89-33.18-33.19-33.18zM193.02 734.36c39.62 39.64 92.39 61.46 148.6 61.46S450.6 774 490.22 734.36L769.5 455.08c39.63-39.62 61.46-92.39 61.46-148.59 0-56.21-21.83-108.99-61.46-148.61l-32.12-32.11c-39.7-39.7-92.48-61.56-148.6-61.56-56.13 0-108.92 21.86-148.61 61.56L160.91 405.04c-81.94 81.94-81.94 215.27 0 297.21l32.11 32.11z m307.3-103.94L264.85 394.96 487.1 172.71c27.16-27.15 63.28-42.12 101.68-42.12 38.4 0 74.51 14.97 101.67 42.12l32.12 32.11c56.05 56.06 56.05 147.29 0 203.34L500.32 630.42zM217.93 441.88L453.4 677.34l-10.1 10.1c-56.06 56.04-147.29 56.04-203.34 0l-32.12-32.11c-56.06-56.06-56.06-147.31 0-203.36l10.09-10.09z" p-id="3810"></path></svg>
@@ -151,16 +163,20 @@ customElements.define('draw-div', class extends HTMLElement {
         let canvasWidth = this.getAttribute('width');
         let canvasHeight = this.getAttribute('height');
         let canvasBackground = this.getAttribute('background');
-        this.tools = this.shadowRoot.querySelector('.tools-main'); 
-        this.tools.style.width = `${canvasWidth}px`;
+        this.tools = this.shadowRoot.querySelector('.tools-main');
         if(canvasWidth===null && canvasWidth===null){
             console.error('draw-div need width and height set it in attribute!');
+        }else if(canvasWidth === 'full' && canvasHeight === 'full'){
+            this.canvas.width = document.body.scrollWidth - 6;
+            this.canvas.height = window.innerHeight - this.tools.scrollHeight*1.6;
+            
+            this.tools.style.width = `${document.body.scrollWidth}px`;
+        }else{
+            this.canvas.width = canvasWidth;
+            this.canvas.height = canvasHeight;
+            this.tools.style.width = `${canvasWidth}px`;
         }
-        this.canvas.width = canvasWidth;
-        this.canvas.height = canvasHeight;
-        if(canvasBackground === null){
-           canvasBackground = '#fff';
-        }
+        canvasBackground ??='#fff'
         this.canvas.style.backgroundColor = canvasBackground;
         this.ctx = this.canvas.getContext('2d');
     }
@@ -174,10 +190,6 @@ customElements.define('draw-div', class extends HTMLElement {
         function hasClass(element, cls) {
             return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
            }
-        /**
-         * quick console.log
-         */
-        let c = console.log;
         /**
          * choose the pen color
          */
@@ -207,13 +219,34 @@ customElements.define('draw-div', class extends HTMLElement {
          */
         let drawWidth = 10;
         let input = this.shadowRoot.querySelector('#strokeWidth')
-        input.addEventListener("change",()=>{
+        let drawWidthChange = ()=>{
             drawWidth = input.value
-        })
+            return drawWidth
+        }
+        input.addEventListener("change",drawWidthChange)
+        
         /**
          * init the drawing
          */
         draw(this.canvas,this.ctx);
+
+         // mousemoving pointer *-under construction-*
+         function mousemove(){
+            //  let mouse = this.shadowRoot.querySelector('.mouse');
+            //  mouse.style.width = `${drawWidth}px`;
+            //  mouse.style.height = `${drawWidth}px`;
+            //  mouse.style.backgroundColor = color.value;
+            //  this.canvas.onmousemove = (event)=>{
+            //      var event = event || window.event;
+            //      let pageX = event.pageX || event.clientX + document.documentElement.scrollLeft;
+            //      let pageY = event.pageY || event.clientY + document.documentElement.scrollTop;
+            //      let targetX = pageX - mouse.offsetWidth / 2;
+            //      let targetY = pageY - mouse.offsetHeight / 2;
+            //      mouse.style.left = `${targetX}px`;
+            //      mouse.style.top = `${targetY}px`;
+            //  }
+         }
+         mousemove.call(this);
         /**
          * choose the pen or rubber
          * ↓ element seleter
@@ -276,9 +309,13 @@ customElements.define('draw-div', class extends HTMLElement {
      */
     function rubberthedraw(canvas,ctx){
         canvas.addEventListener('mousedown', (e) => {
-            ctx.clearRect(e.offsetX, e.offsetY, drawWidth, drawWidth);
+            let targetX = e.offsetX - drawWidth / 2
+            let targetY = e.offsetY - drawWidth / 2
+            ctx.clearRect(targetX, targetY, drawWidth, drawWidth);
             canvas.onmousemove = (e) => {
-                ctx.clearRect(e.offsetX, e.offsetY, drawWidth, drawWidth);
+                let targetX = e.offsetX - drawWidth / 2
+                let targetY = e.offsetY - drawWidth / 2
+                ctx.clearRect(targetX,targetY, drawWidth, drawWidth);
             }
             canvas.addEventListener('mouseup', () => {
                 canvas.onmousemove = null;
@@ -292,9 +329,13 @@ customElements.define('draw-div', class extends HTMLElement {
       */
     function draw(canvas,ctx){
         canvas.addEventListener('mousedown', (e) => {
-            ctx.fillRect(e.offsetX, e.offsetY, drawWidth, drawWidth);           
+            let targetX = e.offsetX - drawWidth / 2
+            let targetY = e.offsetY - drawWidth / 2
+            ctx.fillRect(targetX, targetY, drawWidth, drawWidth);           
             canvas.onmousemove = (e) => {
-                ctx.fillRect(e.offsetX, e.offsetY, drawWidth, drawWidth);
+                let targetX = e.offsetX - drawWidth / 2
+                let targetY = e.offsetY - drawWidth / 2
+                ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
             }
             canvas.addEventListener('mouseup', () => {
                 canvas.onmousemove = null;
@@ -341,7 +382,7 @@ customElements.define('draw-div', class extends HTMLElement {
         straightColumn(this.canvas,this.ctx)
     })
     /**
-     * cansel the straight locking
+     * cancel the straight locking
      */
     cancel.addEventListener('click',()=>{
         let rowTrue = this.shadowRoot.querySelectorAll('.row.active>svg>path');
@@ -363,10 +404,13 @@ customElements.define('draw-div', class extends HTMLElement {
      */
     function straightRow(canvas,ctx){
         canvas.addEventListener('mousedown', (e) => {
-            ctx.fillRect(e.offsetX, e.offsetY, drawWidth, drawWidth);
-            let save = e.offsetY
+            let targetX = e.offsetX - drawWidth / 2
+            let targetY = e.offsetY - drawWidth / 2
+            ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
+            let save = e.offsetY - drawWidth / 2
             canvas.onmousemove = (e) => {
-                ctx.fillRect(e.offsetX, save, drawWidth, drawWidth);
+                let targetX = e.offsetX - drawWidth / 2
+                ctx.fillRect(targetX, save, drawWidth, drawWidth);
             }
             canvas.addEventListener('mouseup', () => {
                 canvas.onmousemove = null;
@@ -380,16 +424,19 @@ customElements.define('draw-div', class extends HTMLElement {
      */ 
     function straightColumn(canvas,ctx){
         canvas.addEventListener('mousedown', (e) => {
-            ctx.fillRect(e.offsetX, e.offsetY, drawWidth, drawWidth);
-            let save = e.offsetX
+            let targetX = e.offsetX - drawWidth / 2
+            let targetY = e.offsetY - drawWidth / 2
+            ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
+            let save = e.offsetX - drawWidth / 2
             canvas.onmousemove = (e) => {
-                ctx.fillRect(save, e.offsetY, drawWidth, drawWidth);
+                let targetY = e.offsetY - drawWidth / 2
+                ctx.fillRect(save, targetY, drawWidth, drawWidth);
             }
             canvas.addEventListener('mouseup', () => {
                 canvas.onmousemove = null;
              })
         })
-    }  
+    }
         //storkeline (backup plan)*-never use-*
         function strokemethod(){
         // let mousedown = false
@@ -417,22 +464,7 @@ customElements.define('draw-div', class extends HTMLElement {
         //     }
         //     }
         }
-        // mousemoving pointer *-under construction-*
-        function mousemove(){
-            // let mouse = this.shadowRoot.querySelector('.mouse');
-            // mouse.style.width = `${drawWidth}px`;
-            // mouse.style.height = `${drawWidth}px`;
-            // mouse.style.backgroundColor = color.value;
-            // this.canvas.onmousemove = (event)=>{
-            //     var event = event || window.event;
-            //     let pageX = event.pageX || event.clientX + document.documentElement.scrollLeft;
-            //     let pageY = event.pageY || event.clientY + document.documentElement.scrollTop;
-            //     let targetX = pageX - mouse.offsetWidth / 2;
-            //     let targetY = pageY - mouse.offsetHeight / 2;
-            //     mouse.style.left = `${targetX}px`;
-            //     mouse.style.top = `${targetY}px`;
-            // }
-        }
+
         /**
          * clean up the canvas
          */
@@ -462,5 +494,179 @@ customElements.define('draw-div', class extends HTMLElement {
         a.click();
         document.body.removeChild(a);
        }
+    }
+});
+// 2.a carousel component
+customElements.define('carousel-component', class extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.innerHTML = `
+        <style>
+        #auto_image_box{
+            position: relative;
+        }
+        #auto_image_box>.img_box{
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.5s;
+            transition-timing-function: linear;
+        }
+        #auto_image_box>.img_box:nth-child(1){
+            opacity: 1;
+            position: relative;
+        }
+        img{
+            cursor: pointer;
+            border-radius: 15px;
+        }
+        .button-flex{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 99;
+        }
+        #left,#right{
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            outline: none;
+            border: none;
+            color: #fff;
+            background-color: rgba(140, 140, 140, 0.658);
+            font-weight: bolder;
+            font-size: 20px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 50%;
+        }
+        .xuan li{
+            list-style: none;
+            float: left;
+            margin-left: 5px;
+        }
+        .xuan{
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0;
+            margin:0;
+            z-index: 99;
+        }
+        .circle{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+        
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+        .active{
+            background: #000;
+            border: 1px solid #fff;
+        }
+        </style>
+    <div class="main" style="margin-top:10px">
+        <div id="auto_image_box">
+                <ul class="xuan">
+                </ul>
+            <div class="button-flex">
+                <input type="button" value="<" id="left">
+                <input type="button" value=">" id="right">
+            </div>
+        </div>  
+    </div>
+    `;
+    let reg = /[\[|\]|\{|\}\?]/g;
+    let picSrcList = this.getAttribute('picSrcList');
+    let spliticon = this.getAttribute('spliticon');
+    picSrcList = picSrcList.replace(reg, '')
+    spliticon ??='*'
+    let picSrcListArr = picSrcList.split(spliticon);
+    console.log(picSrcListArr)
+    let picCount = picSrcListArr.length;
+    let picLinkList = this.getAttribute('picLinkList');
+    picLinkList ??= "#"
+    let img_box = this.shadowRoot.querySelector('#auto_image_box');
+    img_box.style.width = `${this.getAttribute('picWidth')}px`;
+    img_box.style.height = `${this.getAttribute('picHeight')}px`;
+    let button_flex = this.shadowRoot.querySelector('.button-flex');
+    button_flex.style.width = `${img_box.offsetWidth}px`
+    button_flex.style.top = `${img_box.offsetHeight/2.2}px`
+    let ul = this.shadowRoot.querySelector('.xuan');
+    addCarouselItem();
+    // let _imgbox = this.shadowRoot.querySelectorAll('#auto_image_box>.img_box>a>img');
+    // _imgbox.forEach((item)=>{
+    //     item.style.width = `${this.getAttribute('picWidth')}px`;
+    //     item.style.height = `${this.getAttribute('picHeight')}px`;
+    // })
+    ul.style.top = `${img_box.offsetHeight-ul.offsetHeight*2}px`
+        function addCarouselItem(){
+            for(let i = 0; i < picCount; i++){
+                let carouselItem = document.createElement('div');
+                carouselItem.classList.add('img_box');
+                carouselItem.innerHTML = `<a href="${picLinkList[i]}"><img src="${picSrcListArr[i]}" alt=""></a>`;
+                let li = document.createElement('li');
+                li.innerHTML = `<div class="circle"></div>`;
+                ul.appendChild(li);
+                img_box.appendChild(carouselItem);
+            }
+        }
+    }
+    connectedCallback() {
+        let left = this.shadowRoot.querySelector("#left");
+        let right = this.shadowRoot.querySelector('#right');
+        let ul = this.shadowRoot.querySelectorAll('ul>li>div');
+        let image = this.shadowRoot.querySelectorAll('#auto_image_box>.img_box');
+        for(let i =0;i<ul.length;i++){
+            ((i)=>{
+                let _i =i;
+                ul[i].onclick =()=>{
+                    auto_image.jump(i);
+                }
+            })(i)	
+        }
+        function Image1(imgs,ul){
+            this.index = 0;
+            this.imgs = imgs;
+            this.ul = ul;
+        }
+        let photo = image.length-1;
+        Image1.prototype.next = function(){ 
+            if(this.index == photo){
+                this.jump(this.index-photo);
+            }else{
+                this.jump(this.index+1);
+            }
+        }
+        Image1.prototype.perv = function(){
+            if(this.index == 0){
+                this.jump(this.index+photo);
+            }else{
+                this.jump(this.index-1);
+            }
+        }
+        Image1.prototype.jump = function(index){
+            this.imgs[this.index].style.opacity=0;
+            this.ul[this.index].classList.remove('active');
+            this.imgs[index].style.opacity=1;
+            this.ul[index].classList.add('active');
+            this.index=index;
+        }
+        left.onclick = ()=>{
+            auto_image.perv();
+        }
+        right.onclick = ()=>{
+            auto_image.next();
+        }
+        let auto_image = new Image1(image,ul);
+        function move(){
+            auto_image.next();
+        }
+        setInterval(move, 1500);
     }
 });
