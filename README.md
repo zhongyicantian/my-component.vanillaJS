@@ -21,3 +21,5 @@
 |item|none|required|
 ### how to use↓
     items="[['exp',html,css,js,json],['framework',react,vue,Angular]]"
+![example1](https://github.com/zhongyicantian/my-component.vanillaJS/blob/main/example1.png)
+![example2](https://github.com/zhongyicantian/my-component.vanillaJS/blob/main/example2.png)
