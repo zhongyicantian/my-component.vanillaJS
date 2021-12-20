@@ -15,3 +15,9 @@
 |spliticon|*|  |
 |picWidth|none| required |
 |picHeight|none| required |
+    <navigator-bar items="Array"></navigator-bar>
+|attribute|default|required|
+| ---- | ---- | ---- |
+|item|none|required|
+### how to use↓
+    items="[['exp',html,css,js,json],['framework',react,vue,Angular]]"
