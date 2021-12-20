@@ -79,7 +79,7 @@ customElements.define('draw-component', class extends HTMLElement {
                 #Backgroundcolor::-webkit-color-swatch {
                     border: none;
                     width: 30px;
-                    border-radius: 50%;
+
                 }
           
                 #color::-webkit-color-swatch {
@@ -96,10 +96,12 @@ customElements.define('draw-component', class extends HTMLElement {
                 .hidden{
                    display: none;
                 }
+                /*
                 .mouse{
                     position: absolute;
                     border:1px solid #000;
                 }
+                */
             </style>
             <canvas></canvas>
             <div class="mouse"></div> 
@@ -164,12 +166,11 @@ customElements.define('draw-component', class extends HTMLElement {
         let canvasHeight = this.getAttribute('height');
         let canvasBackground = this.getAttribute('background');
         this.tools = this.shadowRoot.querySelector('.tools-main');
-        if(canvasWidth===null && canvasWidth===null){
-            console.error('draw-div need width and height set it in attribute!');
-        }else if(canvasWidth === 'full' && canvasHeight === 'full'){
+        canvasWidth??=600;
+        canvasHeight??=400;
+        if(canvasWidth === 'full' && canvasHeight === 'full'){
             this.canvas.width = document.body.scrollWidth - 6;
-            this.canvas.height = window.innerHeight - this.tools.scrollHeight*1.6;
-            
+            this.canvas.height = window.innerHeight - this.tools.scrollHeight*1.6; 
             this.tools.style.width = `${document.body.scrollWidth}px`;
         }else{
             this.canvas.width = canvasWidth;
@@ -209,10 +210,11 @@ customElements.define('draw-component', class extends HTMLElement {
          */
         let toogleToolBar = this.shadowRoot.querySelector('#toogle');
         let tools = this.shadowRoot.querySelectorAll('.tools');
+        let toolstext = [...tools];
         toogleToolBar.addEventListener('click', () => {
-                tools.forEach(tool => {
-                    tool.classList.toggle('hidden')
-                })
+            toolstext.map(item => {
+                item.classList.toggle('hidden');
+            })
         })
         /**
          * get the pen stroke size in attribute "drawWidth"
@@ -527,7 +529,7 @@ customElements.define('carousel-component', class extends HTMLElement {
             justify-content: space-between;
             align-items: center;
             position: relative;
-            z-index: 99;
+            z-index: 9;
         }
         #left,#right{
             width: 30px;
@@ -554,7 +556,7 @@ customElements.define('carousel-component', class extends HTMLElement {
             transform: translateX(-50%);
             padding: 0;
             margin:0;
-            z-index: 99;
+            z-index: 9;
         }
         .circle{
             width: 10px;
@@ -584,13 +586,15 @@ customElements.define('carousel-component', class extends HTMLElement {
     let reg = /[\[|\]|\{|\}\?]/g;
     let picSrcList = this.getAttribute('picSrcList');
     let spliticon = this.getAttribute('spliticon');
+    this.removeAttribute('picSrcList');
+    this.removeAttribute('spliticon');
     picSrcList = picSrcList.replace(reg, '')
     spliticon ??='*'
     let picSrcListArr = picSrcList.split(spliticon);
-    console.log(picSrcListArr)
     let picCount = picSrcListArr.length;
     let picLinkList = this.getAttribute('picLinkList');
-    picLinkList ??= "#"
+    this.removeAttribute('picLinkList');
+    picLinkList ??= `javascript:void(0);`;
     let img_box = this.shadowRoot.querySelector('#auto_image_box');
     img_box.style.width = `${this.getAttribute('picWidth')}px`;
     img_box.style.height = `${this.getAttribute('picHeight')}px`;
@@ -599,17 +603,12 @@ customElements.define('carousel-component', class extends HTMLElement {
     button_flex.style.top = `${img_box.offsetHeight/2.2}px`
     let ul = this.shadowRoot.querySelector('.xuan');
     addCarouselItem();
-    // let _imgbox = this.shadowRoot.querySelectorAll('#auto_image_box>.img_box>a>img');
-    // _imgbox.forEach((item)=>{
-    //     item.style.width = `${this.getAttribute('picWidth')}px`;
-    //     item.style.height = `${this.getAttribute('picHeight')}px`;
-    // })
     ul.style.top = `${img_box.offsetHeight-ul.offsetHeight*2}px`
         function addCarouselItem(){
             for(let i = 0; i < picCount; i++){
                 let carouselItem = document.createElement('div');
                 carouselItem.classList.add('img_box');
-                carouselItem.innerHTML = `<a href="${picLinkList[i]}"><img src="${picSrcListArr[i]}" alt=""></a>`;
+                carouselItem.innerHTML = `<a href="${picLinkList/*[i]*/}"><img src="${picSrcListArr[i]}" alt=""></a>`;
                 let li = document.createElement('li');
                 li.innerHTML = `<div class="circle"></div>`;
                 ul.appendChild(li);
@@ -624,7 +623,6 @@ customElements.define('carousel-component', class extends HTMLElement {
         let image = this.shadowRoot.querySelectorAll('#auto_image_box>.img_box');
         for(let i =0;i<ul.length;i++){
             ((i)=>{
-                let _i =i;
                 ul[i].onclick =()=>{
                     auto_image.jump(i);
                 }
@@ -667,6 +665,175 @@ customElements.define('carousel-component', class extends HTMLElement {
         function move(){
             auto_image.next();
         }
-        setInterval(move, 1500);
+        let delayTime = this.getAttribute('delayTime');
+        delayTime ??= 2000;
+        setInterval(move, delayTime);
     }
+});
+// 2.a navigator bar component
+customElements.define('navigator-bar', class extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.innerHTML = `
+        <style>
+        .navigator-bar{
+            width: 100%;
+            height: 66px;
+            background-color: #fff;
+            position: fixed;
+            top: 0;
+            z-index: 99;
+            box-shadow: 0 0 5px #000;
+        }
+        [main] {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            padding: 0;
+            margin: 0;
+          }
+          
+          [main] > li {
+            font-size: 20px;
+            display: inline-block;
+          }
+          
+          [main] a {
+            display: block;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+          }
+          
+          [main] a:hover,
+          [main] a:focus {
+            background: #222;
+            color: #fff;
+          }
+          
+          [mainli] {
+            position: relative;
+          }
+          
+          [secmain] {
+            left: 0;
+            margin: 0;
+            position: absolute;
+            text-align: left;
+            top: 100%;
+            opacity: 0;
+            -webkit-transform: translateY(-20px);
+                    transform: translateY(-20px);
+            height: 1px;
+            -webkit-transition: opacity .1s ease-out, -webkit-transform .2s ease-in-out;
+            transition: opacity .1s ease-out, -webkit-transform .2s ease-in-out;
+            transition: transform .2s ease-in-out, opacity .1s ease-out;
+            transition: transform .2s ease-in-out, opacity .1s ease-out, -webkit-transform .2s ease-in-out;
+            overflow: hidden;
+            z-index: 1;
+          }
+          
+          [secmain] {
+            background: #eee;
+            border-top: 0;
+            padding: 0;
+            margin: 0;
+          }
+
+          [secmain] li {
+            list-style: none;
+            text-align: center;
+            width: inherit;
+          }
+
+          [secmain] a {
+            white-space: nowrap;
+          }
+          
+          [main] a:focus + [secmain],
+          [mainli]:hover [secmain],
+          [secmain]:focus-within {
+            opacity: 1;
+            -webkit-transform: translateY(0px);
+                    transform: translateY(0px);
+            height: auto;
+            z-index: 1;
+          }
+        </style>
+        <div class="navigator-bar">
+            <ul main></ul>
+        </div>
+        `;
+    }
+    connectedCallback(){
+        const Items = this.getAttribute('items');
+        this.removeAttribute('items');
+        //array
+        function twoDimensionalArraytoObject(string){
+            //识别出二维数组
+            const reg = /((?<=,|\[)(\[)(.*?)(\])(?=,|\]))/g;
+            const matchArr = string.match(reg);
+            const newArr = [];
+            //把二维数组多余的符号去掉
+            matchArr.map((item)=>{
+                item = item.replace(/(\[)(?=')/g,'')
+                let nitem = item.split(/(?<=')(,)/)
+                nitem.splice(1,1)
+                newArr.push(nitem)
+            })
+            newArr.forEach((item)=>{
+                item[0] = item[0].replace(/'/g,'')
+                item[1] = item[1].replace(/\]/g,'')
+                item[1] === 'null'?item[1] = null:item[1] = item[1].split(",")   
+            })
+            //把二维数组转化为对象
+            const res = Object.fromEntries(newArr);
+            return res;
+        }
+        const typeArr = twoDimensionalArraytoObject(Items);
+        let ul = this.shadowRoot.querySelector('[main]');
+        //导航栏链接
+
+        let href 
+        href??= `javascript:void(0);`;
+
+        //插入二级导航栏
+        function appendToMainUl(node,typeArr){
+            let secMainUl = document.createElement('ul');
+            secMainUl.setAttribute('secmain','');
+            node.appendChild(secMainUl);
+            for(let j in typeArr){
+                let secMainLi = document.createElement('li');
+                secMainLi.innerHTML = `<a herf=${href}>${typeArr[j]}</a>`;
+                secMainUl.appendChild(secMainLi);
+            }
+        }
+        //添加导航栏
+        for(let x in typeArr){
+            let li = document.createElement('li');
+            li.setAttribute('mainli','');
+            li.innerHTML = `<a herf=${href}>${x}</a>`;
+            ul.appendChild(li);
+            li.setAttribute('class',x);
+            //获取二级导航栏插入的位置
+            let node = this.shadowRoot.querySelector(`.${x}`);
+            if( typeArr[x] !== null){
+                appendToMainUl(node,typeArr[x]);
+            }
+        }
+        //控制导航栏统一宽度
+        for(let i = 0;i<ul.children.length;i++){
+            let selectUl = this.shadowRoot.querySelector(`.${ul.children[i].className}`);
+            let secSelectUl = this.shadowRoot.querySelector(`.${ul.children[i].className} [secmain]`);
+            secSelectUl === null?secSelectUl = selectUl:null;   
+            if(selectUl.offsetWidth > secSelectUl.offsetWidth){
+                secSelectUl.style.width = `${selectUl.offsetWidth}px`;
+            }else{
+                selectUl.style.width = `${secSelectUl.offsetWidth}px`;
+            }
+        }
+    };
 });
