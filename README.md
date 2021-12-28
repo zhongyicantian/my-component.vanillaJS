@@ -1,12 +1,16 @@
 # my-component.vanillaJS
 ## how to use↓
 ### set attribute in tag
-    <draw-component width="" height=""></draw-component>
+    <draw-component size="size 800 600"></draw-component>
 |attribute|default|required|
 | ---- | ---- | ---- |
-|width|none|required|
-|height|none|required|
 |background|#fff|  |
+|size|default0||
+#### size options：
+|options|full|size|default0|
+| ---- | ---- | ---- | ---- |
+|width|offset|required|600|
+|height|offset|required|400|
     <carousel-component picSrcList="Array" picLinkList="Array"></carousel-component>
 |attribute|default|required|
 | ---- | ---- | ---- |
