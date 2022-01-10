@@ -1,8 +1,9 @@
 # my-component.vanillaJS
 ## how to use↓
-### set attribute in tag
+###### set attribute in tag
+### draw-component
     <draw-component size="size 800 600"></draw-component>
-or:
+###### or:
     <draw-component size="full"></draw-component>
 |attribute|default|required|
 | ---- | ---- | ---- |
@@ -13,6 +14,7 @@ or:
 | ---- | ---- | ---- | ---- |
 |width|offset|required|600|
 |height|offset|required|400|
+### carousel-component
     <carousel-component picSrcList="Array" picLinkList="Array"></carousel-component>
 |attribute|default|required|
 | ---- | ---- | ---- |
@@ -21,6 +23,7 @@ or:
 |spliticon|*|  |
 |picWidth|none| required |
 |picHeight|none| required |
+### navigator-bar
     <navigator-bar items="Array"></navigator-bar>
 |attribute|default|required|
 | ---- | ---- | ---- |
