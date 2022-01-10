@@ -2,6 +2,8 @@
 ## how to use↓
 ### set attribute in tag
     <draw-component size="size 800 600"></draw-component>
+or:
+    <draw-component size="full"></draw-component>
 |attribute|default|required|
 | ---- | ---- | ---- |
 |background|#fff|  |
