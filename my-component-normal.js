@@ -12,32 +12,60 @@ customElements.define('draw-component', class extends HTMLElement {
             <style>
                 :host {
                     position: relative;
+
+                    --canvas-outline:3px solid #000;
+                    --canvas-radius:15px;
+                    --canvas-margin:3px 10px 0px;
+                    --canvas-BGcolor:#fff;
+
+                    --tools-bar-margin:10px;
+
+                    --button-height:25px;
+                    --button-width:25px;
+                    --button-outline:1px solid #000;
+                    --button-radius:15px;
+                    --button-transition:all 0.2s ease-in-out;
+                    --button-text-spacing:15px;
+
+                    --button-hover-width:60px;
+                    --button-hover-text-spacing:1px;
+
+                    --button-active-BGcolor:#4caf50;
+                    --button-active-color:#fff;
+
+                    --items-width:25px;
+                    --items-height:25px;
+                    --items-color:#000;
+                    --items-outline:1px solid #000;
+                    --items-transition: all 0.2s ease-in-out;
+
+                    --select-color-clippath: polygon(39% 0,15% 71%,19% 100%,45% 14%,52% 17%,36% 68%,25% 65%,19% 100%,44% 82%,66% 8%);
+                    --select-color-BGclippath:ellipse(50% 35% at 50% 50%);
                 }
                 canvas{
-                    outline: 3px solid #000;
-                    border-radius: 15px;
+                    outline: var(--canvas-outline);
+                    border-radius:var(--canvas-radius);
                     position: relative;
-                    margin-top: 3px auto;
-                    margin-left: 10px;
-                    margin-right: 10px;
+                    margin: var(--canvas-margin);
+                    background-color: var(--canvas-BGcolor);
                 }
                 .toogle-tool-bar{
                     z-index: 9;
                 }
                 button{
-                    height: 25px;
+                    height: var(--button-height);
+                    width:var(--button-width);
                     border: none;
                     cursor: pointer;
-                    outline: 1px solid #000;
+                    outline: var(--button-outline);
                     overflow: hidden;
-                    border-radius: 15px;
-                    width:25px;
-                    transition: all 0.2s ease-in-out;
-                    letter-spacing: 15px;
+                    border-radius: var(--button-radius);
+                    transition: var(--button-transition);
+                    letter-spacing: var(--button-text-spacing);
                 }
                 button:hover{
-                    width:60px;
-                    letter-spacing: 1px;
+                    width:var(--button-hover-width);
+                    letter-spacing: var(--button-hover-text-spacing);
                 }
                 input[type="color"],
                 .pen,
@@ -50,15 +78,15 @@ customElements.define('draw-component', class extends HTMLElement {
                 #font,
                 #strokeWidth,
                 .download{
-                    color: black;
+                    color: var(--items-color);
                     border: none;
                     cursor: pointer;
-                    width: 25px;
-                    height: 25px;
-                    outline: 1px solid #000;
+                    width: var(--items-width);
+                    height: var(--items-height);
+                    outline: var(--items-outline);
                     overflow: hidden;
                     text-align: center;
-                    transition: all 0.2s ease-in-out;
+                    transition: var(--items-transition);
                 }
                 #strokeWidth,#font{
                     padding:0;
@@ -84,11 +112,11 @@ customElements.define('draw-component', class extends HTMLElement {
                     height: 25px;
                 }
                 .active{
-                    background-color: #4caf50;
+                    background-color: var(--button-active-BGcolor);
                 }
                 button:active {
-                    background-color: #4CAF50;
-                    color: white;
+                    background-color: var(--button-active-BGcolor);
+                    color: var(--button-active-color);
                 }
                 input[type="color"]::-webkit-color-swatch-wrapper {
                    padding: 0;
@@ -96,26 +124,20 @@ customElements.define('draw-component', class extends HTMLElement {
                 #Backgroundcolor::-webkit-color-swatch {
                     border: none;
                     width: 30px;
-                    clip-path: ellipse(50% 35% at 50% 50%);
+                    clip-path: var(--select-color-BGclippath);
                 }
                 #color::-webkit-color-swatch {
                     border: none;
                     width: 10px;
-                    clip-path: polygon(39% 0,15% 71%,19% 100%,45% 14%,52% 17%,36% 68%,25% 65%,19% 100%,44% 82%,66% 8%);
+                    clip-path: var(--select-color-clippath);
                 }
                 .tools-main{
                     display: flex;
                     justify-content: space-around;
                     align-items: center;
                     background-image: linear-gradient(to bottom, rgba(255,255,255,.2), rgba(255,255,255,1));
-                    margin-top: 10px;
+                    margin-top: var(--tools-bar-margin);
                 }
-                /*
-                .mouse{
-                    position: absolute;
-                    border:1px solid #000;
-                }
-                */
             </style>
             <canvas></canvas>
             <div class="mouse"></div> 
@@ -173,14 +195,10 @@ customElements.define('draw-component', class extends HTMLElement {
         `;
         /**
          * some seleter~
-         * init the canvas,tools-bar,background
-         * default-background 
+         * init the canvas,tools-bar,
          */
         this.canvas = this.shadowRoot.querySelector('canvas');
-        let canvasBackground = this.getAttribute('background');
         this.tools = this.shadowRoot.querySelector('.tools-main');
-        canvasBackground ??= '#fff'
-        this.canvas.style.backgroundColor = canvasBackground;
         this.ctx = this.canvas.getContext('2d');
         /**
          * canvas size options
@@ -233,33 +251,146 @@ customElements.define('draw-component', class extends HTMLElement {
             return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
         }
         /**
+         * main class
+         */
+        class Darw {
+            constructor(ctx, canvas) {
+                this.ctx = ctx;
+                this.canvas = canvas;
+                this.drawWidth = 10;
+                this.count = 1;
+            }
+            selectcolor(seleter) {
+                this.ctx.fillStyle = seleter.value;
+            }
+            selectBGcolor(seleter) {
+                this.canvas.style.backgroundColor = seleter.value;
+            }
+            storkeWidth(seleter) {
+                this.drawWidth = seleter.value
+                return this.drawWidth
+            }
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            /**
+             * main pen work function
+             */
+            draw() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    let targetX = e.offsetX - this.drawWidth / 2
+                    let targetY = e.offsetY - this.drawWidth / 2
+                    this.ctx.fillRect(targetX, targetY, this.drawWidth, this.drawWidth);
+                    this.canvas.onmousemove = (e) => {
+                        let targetX = e.offsetX - this.drawWidth / 2
+                        let targetY = e.offsetY - this.drawWidth / 2
+                        this.ctx.fillRect(targetX, targetY, this.drawWidth, this.drawWidth);
+                    }
+                    this.canvas.addEventListener('mouseup', () => {
+                        this.canvas.onmousemove = null;
+                    })
+                    this.canvas.addEventListener('mouseleave', () => {
+                        this.canvas.onmousemove = null;
+                    })
+                })
+            }
+            /**
+             * main rubber work function
+             */
+            rubber() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    let targetX = e.offsetX - this.drawWidth / 2
+                    let targetY = e.offsetY - this.drawWidth / 2
+                    this.ctx.clearRect(targetX, targetY, this.drawWidth, this.drawWidth);
+                    this.canvas.onmousemove = (e) => {
+                        let targetX = e.offsetX - this.drawWidth / 2
+                        let targetY = e.offsetY - this.drawWidth / 2
+                        this.ctx.clearRect(targetX, targetY, this.drawWidth, this.drawWidth);
+                    }
+                    this.canvas.addEventListener('mouseup', () => {
+                        this.canvas.onmousemove = null;
+                    })
+                    this.canvas.addEventListener('mouseleave', () => {
+                        this.canvas.onmousemove = null;
+                    })
+                })
+            }
+            /**
+             * main row work function
+             */
+            straightRow() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    let targetX = e.offsetX - this.drawWidth / 2
+                    let targetY = e.offsetY - this.drawWidth / 2
+                    this.ctx.fillRect(targetX, targetY, this.drawWidth, this.drawWidth);
+                    let save = e.offsetY - this.drawWidth / 2
+                    this.canvas.onmousemove = (e) => {
+                        let targetX = e.offsetX - this.drawWidth / 2
+                        this.ctx.fillRect(targetX, save, this.drawWidth, this.drawWidth);
+                    }
+                    this.canvas.addEventListener('mouseup', () => {
+                        this.canvas.onmousemove = null;
+                    })
+                })
+            }
+            /**
+            * main column work function
+            */
+            straightColumn() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    let targetX = e.offsetX - this.drawWidth / 2
+                    let targetY = e.offsetY - this.drawWidth / 2
+                    this.ctx.fillRect(targetX, targetY, this.drawWidth, this.drawWidth);
+                    let save = e.offsetX - this.drawWidth / 2
+                    this.canvas.onmousemove = (e) => {
+                        let targetY = e.offsetY - this.drawWidth / 2
+                        this.ctx.fillRect(save, targetY, this.drawWidth, this.drawWidth);
+                    }
+                    this.canvas.addEventListener('mouseup', () => {
+                        this.canvas.onmousemove = null;
+                    })
+                })
+            }
+            canvasToImage() {
+                let image = new Image()
+                image.src = this.canvas.toDataURL(`image/png`);
+                let a = document.createElement('a');
+                a.href = image.src;
+                a.download = `myArt${this.count++}.png`;
+                a.innerHTML = 'download';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+        let draws = new Darw(this.ctx, this.canvas);
+        /**
          * choose the pen color
          */
         let color = this.shadowRoot.querySelector('#color');
-        let colorvalue = () => { this.ctx.fillStyle = color.value; }
-        color.addEventListener('change', colorvalue)
+        color.addEventListener('change', () => {
+            draws.selectcolor(color)
+        });
+        ;
         /**
          * choose canvas background color
          */
         let _backgroundcolor = this.shadowRoot.querySelector('#Backgroundcolor')
-        let BGcolorvalue = () => { this.canvas.style.backgroundColor = _backgroundcolor.value; }
-        _backgroundcolor.addEventListener('change', BGcolorvalue)
+        _backgroundcolor.addEventListener('change', () => {
+            draws.selectBGcolor(_backgroundcolor)
+        })
         /**
-         * get the pen stroke size in attribute "drawWidth"
+         * set "drawWidth"
          */
-        let drawWidth = 10;
         let input = this.shadowRoot.querySelector('#strokeWidth')
-        let drawWidthChange = () => {
-            drawWidth = input.value
-            return drawWidth
-        }
-        input.addEventListener("change", drawWidthChange)
+        input.addEventListener("change", () => {
+            drawWidth = draws.storkeWidth(input)
+        })
 
         /**
          * init the drawing
          */
-        draw(this.canvas, this.ctx);
-
+        draws.draw();
         // mousemoving pointer *-under construction-*
         function mousemove() {
             //  let mouse = this.shadowRoot.querySelector('.mouse');
@@ -311,7 +442,7 @@ customElements.define('draw-component', class extends HTMLElement {
                 columnTrue.forEach(item => {
                     item.removeAttribute('fill')
                 })
-                rubberthedraw(this.canvas, this.ctx);
+                draws.rubber();
             }
         });
         /**
@@ -329,56 +460,10 @@ customElements.define('draw-component', class extends HTMLElement {
                 rubberPathFalse.forEach(item => {
                     item.removeAttribute('fill');
                 })
-                draw(this.canvas, this.ctx);
-                colorvalue()
+                draws.draw();
+                draws.selectcolor(color);
             }
         });
-        /**
-         * main rubber work function
-         * @param {*} canvas 
-         * @param {*} ctx 
-         */
-        function rubberthedraw(canvas, ctx) {
-            canvas.addEventListener('mousedown', (e) => {
-                let targetX = e.offsetX - drawWidth / 2
-                let targetY = e.offsetY - drawWidth / 2
-                ctx.clearRect(targetX, targetY, drawWidth, drawWidth);
-                canvas.onmousemove = (e) => {
-                    let targetX = e.offsetX - drawWidth / 2
-                    let targetY = e.offsetY - drawWidth / 2
-                    ctx.clearRect(targetX, targetY, drawWidth, drawWidth);
-                }
-                canvas.addEventListener('mouseup', () => {
-                    canvas.onmousemove = null;
-                })
-                canvas.addEventListener('mouseleave', () => {
-                    canvas.onmousemove = null;
-                })
-            })
-        }
-        /**
-         * main pen work function
-         * @param {*} canvas 
-         * @param {*} ctx 
-         */
-        function draw(canvas, ctx) {
-            canvas.addEventListener('mousedown', (e) => {
-                let targetX = e.offsetX - drawWidth / 2
-                let targetY = e.offsetY - drawWidth / 2
-                ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
-                canvas.onmousemove = (e) => {
-                    let targetX = e.offsetX - drawWidth / 2
-                    let targetY = e.offsetY - drawWidth / 2
-                    ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
-                }
-                canvas.addEventListener('mouseup', () => {
-                    canvas.onmousemove = null;
-                })
-                canvas.addEventListener('mouseleave', () => {
-                    canvas.onmousemove = null;
-                })
-            })
-        }
         /**
          *  drow a straight line row or column direction
          * ↓ element selector
@@ -387,7 +472,7 @@ customElements.define('draw-component', class extends HTMLElement {
         let column = this.shadowRoot.querySelector('.column');
         let cancel = this.shadowRoot.querySelector('.cancel');
         /**
-         * row direction
+         * row direction locking
          */
         row.addEventListener('click', () => {
             row.classList.add('active')
@@ -400,10 +485,10 @@ customElements.define('draw-component', class extends HTMLElement {
             columnFalse.forEach(item => {
                 item.removeAttribute('fill')
             })
-            straightRow(this.canvas, this.ctx)
+            draws.straightRow()
         })
         /**
-         * column direction
+         * column direction locking
          */
         column.addEventListener('click', () => {
             column.classList.add('active')
@@ -416,7 +501,7 @@ customElements.define('draw-component', class extends HTMLElement {
             rowFalse.forEach(item => {
                 item.removeAttribute('fill')
             })
-            straightColumn(this.canvas, this.ctx)
+            draws.straightColumn()
         })
         /**
          * cancel the straight locking
@@ -432,48 +517,9 @@ customElements.define('draw-component', class extends HTMLElement {
             columnTrue.forEach(item => {
                 item.removeAttribute('fill')
             })
-            draw(this.canvas, this.ctx);
+            draws.draw();
         })
-        /**
-         * main row work function
-         * @param {*} canvas 
-         * @param {*} ctx 
-         */
-        function straightRow(canvas, ctx) {
-            canvas.addEventListener('mousedown', (e) => {
-                let targetX = e.offsetX - drawWidth / 2
-                let targetY = e.offsetY - drawWidth / 2
-                ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
-                let save = e.offsetY - drawWidth / 2
-                canvas.onmousemove = (e) => {
-                    let targetX = e.offsetX - drawWidth / 2
-                    ctx.fillRect(targetX, save, drawWidth, drawWidth);
-                }
-                canvas.addEventListener('mouseup', () => {
-                    canvas.onmousemove = null;
-                })
-            })
-        }
-        /**
-         * main column work function
-         * @param {*} canvas 
-         * @param {*} ctx 
-         */
-        function straightColumn(canvas, ctx) {
-            canvas.addEventListener('mousedown', (e) => {
-                let targetX = e.offsetX - drawWidth / 2
-                let targetY = e.offsetY - drawWidth / 2
-                ctx.fillRect(targetX, targetY, drawWidth, drawWidth);
-                let save = e.offsetX - drawWidth / 2
-                canvas.onmousemove = (e) => {
-                    let targetY = e.offsetY - drawWidth / 2
-                    ctx.fillRect(save, targetY, drawWidth, drawWidth);
-                }
-                canvas.addEventListener('mouseup', () => {
-                    canvas.onmousemove = null;
-                })
-            })
-        }
+
         //storkeline (backup plan)*-never use-*
         function strokemethod() {
             // let mousedown = false
@@ -501,35 +547,20 @@ customElements.define('draw-component', class extends HTMLElement {
             //     }
             //     }
         }
-
         /**
          * clean up the canvas
          */
         let clear = this.shadowRoot.querySelector('#clear');
         clear.addEventListener('click', () => {
-            //refresh the canvas
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            draws.clear();
         })
         /**
          * converts canvas to images and download
          */
         let download = this.shadowRoot.querySelector('.download')
-        this.canvas = this.shadowRoot.querySelector('canvas');
         download.addEventListener('click', () => {
-            canvasToImage(this.canvas)
+            draws.canvasToImage()
         })
-        let count = 1;
-        function canvasToImage(canvas) {
-            let image = new Image()
-            image.src = canvas.toDataURL(`image/png`);
-            let a = document.createElement('a');
-            a.href = image.src;
-            a.download = `myArt${count++}.png`;
-            a.innerHTML = 'download';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
     }
 });
 // 2.a carousel component
@@ -539,15 +570,45 @@ customElements.define('carousel-component', class extends HTMLElement {
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.innerHTML = `
         <style>
+        :host{
+            --img-width:600px;
+            --img-height:400px;
+            --img-border-radius:20px;
+            --img-transition:0.5s;
+
+            --button-width:30px;
+            --button-height:30px;
+            --button-margin:5px;
+            --button-color:#fff;
+            --button-BGcolor:rgba(140, 140, 140, 0.658);
+            --button-fontsize:20px;
+            --button-radius:50%;
+
+            --navigator-bar-height:12px;
+            --navigator-bar-each-margin:5px;
+            --navigator-bar-left:50%;
+            --navigator-bar-transform:translateX(-50%);
+
+            --navigator-point-width:10px;
+            --navigator-point-height:10px;
+            --navigator-point-radius:50%;
+            --navigator-point-color:#fff;
+            --navigator-point-border:1px solid #000;
+
+            --navigator-point-active-BGcolor:#000;
+            --navigator-point-active-border:1px solid #fff;
+        }
         #auto_image_box{
             position: relative;
+            width:var(--img-width);
+            height:var(--img-height);
         }
         #auto_image_box>.img_box{
             position: absolute;
             top: 0;
             left: 0;
             opacity: 0;
-            transition: opacity 0.5s;
+            transition: opacity var(--img-transition);
             transition-timing-function: linear;
         }
         #auto_image_box>.img_box:nth-child(1){
@@ -556,52 +617,57 @@ customElements.define('carousel-component', class extends HTMLElement {
         }
         img{
             cursor: pointer;
+            border-radius:var(--border-radius);
         }
         .button-flex{
+            width:var(--img-width);
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: relative;
+            top:calc(var(--img-height) /2.2);
             z-index: 9;
         }
         #left,#right{
-            width: 30px;
-            height: 30px;
-            margin: 5px;
+            width: var(--button-width);
+            height: var(--button-height);
+            margin: var(--button-margin);
             outline: none;
             border: none;
-            color: #fff;
-            background-color: rgba(140, 140, 140, 0.658);
+            color: var(--button-color);
+            background-color: var(--button-BGcolor);
             font-weight: bolder;
-            font-size: 20px;
+            font-size: var(--button-fontsize);
             cursor: pointer;
             text-align: center;
-            border-radius: 50%;
-        }
-        .xuan li{
-            list-style: none;
-            float: left;
-            margin-left: 5px;
+            border-radius: var(--button-radius);
         }
         .xuan{
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            height: var(--navigator-bar-height);
+            top: calc(var(--img-height) - var(--navigator-bar-height)*2);
+            left: var(--navigator-bar-left);
+            transform: var(--navigator-bar-transform);
             padding: 0;
             margin:0;
             z-index: 9;
         }
+        .xuan li{
+            list-style: none;
+            float: left;
+            margin-left:var(--navigator-bar-each-margin);
+        }
         .circle{
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #fff;
-            border: 1px solid #000;
+            width: var(--navigator-point-width);
+            height: var(--navigator-point-height);
+            border-radius: var(--navigator-point-radius);
+            background: var(--navigator-point-color);
+            border:var(--navigator-point-border);
             cursor: pointer;
         }
         .active{
-            background: #000;
-            border: 1px solid #fff;
+            background: var(--navigator-point-active-BGcolor);
+            border: var(--navigator-point-active-border);
         }
         </style>
     <div class="main" style="margin-top:10px">
@@ -631,15 +697,9 @@ customElements.define('carousel-component', class extends HTMLElement {
         const picSrcListArr = initArray(picSrcList);
         const picLinkListArr = initArray(picLinkList);
         let img_box = this.shadowRoot.querySelector('#auto_image_box');
-        img_box.style.width = `${this.getAttribute('picWidth')}px`;
-        img_box.style.height = `${this.getAttribute('picHeight')}px`;
-        let button_flex = this.shadowRoot.querySelector('.button-flex');
-        button_flex.style.width = `${img_box.offsetWidth}px`
-        button_flex.style.top = `${img_box.offsetHeight / 2.2}px`
         let ul = this.shadowRoot.querySelector('.xuan');
         let picCount = picSrcListArr.length;
         addCarouselItem();
-        ul.style.top = `${img_box.offsetHeight - ul.offsetHeight * 2}px`
         function addCarouselItem() {
             for (let i = 0; i < picCount; i++) {
                 let carouselItem = document.createElement('div');
@@ -657,11 +717,13 @@ customElements.define('carousel-component', class extends HTMLElement {
         let right = this.shadowRoot.querySelector('#right');
         let ul = this.shadowRoot.querySelectorAll('ul>li>div');
         let image = this.shadowRoot.querySelectorAll('#auto_image_box>.img_box');
+        let navgatoropt = this.getAttribute('navgatorpoint');
+        navgatoropt ??= 'click';
         for (let i = 0; i < ul.length; i++) {
             ((i) => {
-                ul[i].onclick = () => {
+                ul[i].addEventListener(navgatoropt, () => {
                     auto_image.jump(i);
-                }
+                })
             })(i)
         }
         function Image1(imgs, ul) {
@@ -705,18 +767,33 @@ customElements.define('navigator-bar', class extends HTMLElement {
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.innerHTML = `
         <style>
+        :host{
+            --navigator-bar-width: 100%;
+            --navigator-bar-height: 66px;
+            --navigator-bar-BGcolor: #fff;
+            --navigator-bar-shadow: 0 0 5px #000;
+
+            --main-ul-justify-content: space-around;
+
+            --main-ul-li-fontsizeAndpadding: 20px;
+
+            --main-ul-li-hover-BGcolor: #222;
+            --main-ul-li-hover-color: #fff;
+
+            --secmain-ul-li-BGcolor:#eee;
+        }
         .navigator-bar{
-            width: 100%;
-            height: 66px;
-            background-color: #fff;
+            width: var(--navigator-bar-width);
+            height: var(--navigator-bar-height);
+            background-color:var(--navigator-bar-BGcolor);
             position: absolute;
             top: 0;
             z-index: 99;
-            box-shadow: 0 0 5px #000;
+            box-shadow: var(--navigator-bar-shadow);
         }
         [main] {
             display: flex;
-            justify-content: space-around;
+            justify-content:var(--main-ul-justify-content);
             text-align: center;
             position: relative;
             z-index: 2;
@@ -725,13 +802,13 @@ customElements.define('navigator-bar', class extends HTMLElement {
           }
           
           [main] > li {
-            font-size: 20px;
+            font-size: var(--main-ul-li-fontsizeAndpadding);
             display: inline-block;
           }
           
           [main] a {
             display: block;
-            padding: 20px;
+            padding: var(--main-ul-li-fontsizeAndpadding);
             position: relative;
             z-index: 2;
           }
@@ -740,8 +817,8 @@ customElements.define('navigator-bar', class extends HTMLElement {
           }
           [main] a:hover,
           [main] a:focus {
-            background: #222;
-            color: #fff;
+            background: var(--main-ul-li-hover-BGcolor);
+            color: var(--main-ul-li-hover-color);
           }
           [mainli] {
             position: relative;
@@ -766,7 +843,7 @@ customElements.define('navigator-bar', class extends HTMLElement {
           }
           
           [secmain] {
-            background: #eee;
+            background: var( --secmain-ul-li-BGcolor);
             border-top: 0;
             padding: 0;
             margin: 0;
@@ -803,7 +880,7 @@ customElements.define('navigator-bar', class extends HTMLElement {
         this.removeAttribute('items');
         //array
         function twoDimensionalArrayStringtoObject(string) {
-            //识别出二维数组
+            //macth two dimensional array
             const reg = /((?<=,|\[)(\[)(.*?)(\])(?=,|\]))/g;
             const matchArr = string.match(reg);
             const newArr = [];
