@@ -1,7 +1,7 @@
 # my-component.vanillaJS
 ## how to use↓
     <script type="module">
-        import { CarouselComponent, NavigatorBar, DrawComponent } from "./my-component-normal.js"
+        import { CarouselComponent, NavigatorBar, DrawComponent } from "./my-component.js"
         new DrawComponent('draw-123');          //or new DrawComponent() =>  <draw-component></draw-component>
         new CarouselComponent('carousel-123');  //or new CarouselComponent() =>  <carousel-component></carousel-component>
         new NavigatorBar('navigator-123');      //or new NavigatorBar() =>  <navigator-bar></navigator-bar>
